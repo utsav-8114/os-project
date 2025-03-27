@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deadlock Toolkit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto p-6">
+        <h1 class="text-3xl font-bold text-center mb-6">Deadlock Prevention & Recovery Toolkit</h1>
+
+        <div class="bg-gray-800 p-6 rounded-lg">
+            <label class="block text-lg">Processes (comma-separated):</label>
+            <input type="text" id="processes" class="w-full p-2 rounded bg-gray-700 text-white">
+
+            <label class="block mt-4 text-lg">Resources (comma-separated):</label>
+            <input type="text" id="resources" class="w-full p-2 rounded bg-gray-700 text-white">
+
+            <label class="block mt-4 text-lg">Allocation Matrix (JSON format):</label>
+            <textarea id="allocation" class="w-full p-2 rounded bg-gray-700 text-white">[[0, 1], [2, 0]]</textarea>
+
+            <label class="block mt-4 text-lg">Max Demand Matrix (JSON format):</label>
+            <textarea id="max_demand" class="w-full p-2 rounded bg-gray-700 text-white">[[3, 2], [2, 2]]</textarea>
+
+            <label class="block mt-4 text-lg">Available Resources (comma-separated):</label>
+            <input type="text" id="available" class="w-full p-2 rounded bg-gray-700 text-white">
+
+            <button onclick="simulate()" class="mt-4 bg-blue-500 px-4 py-2 rounded text-white w-full">Run Simulation</button>
+        </div>
+
+        <div class="mt-6 bg-gray-800 p-6 rounded-lg">
+            <h2 class="text-2xl font-bold">Results</h2>
+            <p id="result" class="mt-2"></p>
+        </div>
+    </div>
+
+    <script >
+        async function simulate() {
+    const processes = document.getElementById("processes").value.split(",");
+    const resources = document.getElementById("resources").value.split(",");
+    const allocation = JSON.parse(document.getElementById("allocation").value);
+    const max_demand = JSON.parse(document.getElementById("max_demand").value);
+    const available = document.getElementById("available").value.split(",").map(Number);
+
+    const response = await fetch("/simulate", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ processes, resources, allocation, max_demand, available })
+    });
+
+    const data = await response.json();
+    let result = `Safe State: ${data.safe_state ? "Yes" : "No"}<br>`;
+    
+    if (data.safe_state) {
+        result += `Safe Sequence: ${data.safe_sequence.join(" → ")}<br>`;
+    }
+
+    if (data.deadlock_detected) {
+        result += `Deadlock detected! Cycle: ${JSON.stringify(data.deadlock_cycle)}<br>`;
+    } else {
+        result += "No deadlock detected.<br>";
+    }
+
+    document.getElementById("result").innerHTML = result;
+}
+
+    </script>
+</body>
+</html>
