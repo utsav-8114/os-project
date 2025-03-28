@@ -131,7 +131,15 @@
                 }
 
                 if (data.deadlock_detected) {
-                    result += `<strong>Deadlock detected!</strong> Cycle: ${JSON.stringify(data.deadlock_cycle)}<br>`;
+    result += `
+        <div class="p-4 mt-4 rounded-lg border border-red-500 bg-red-900/50 text-red-300">
+            <strong class="text-red-400 text-lg">🚨 Deadlock detected!</strong>
+            <div class="mt-2 text-sm font-mono bg-red-800/40 p-2 rounded-md inline-block">
+                ${data.deadlock_cycle.map(edge => `[${edge[0]} → ${edge[1]}]`).join(" ⮕ ")}
+            </div>
+        </div>`;
+
+
                 } else {
                     result += "<strong>No deadlock detected.</strong><br>";
                 }
