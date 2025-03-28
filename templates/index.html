@@ -3,70 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deadlock Toolkit</title>
+    <title>Deadlock Prevention & Recovery Toolkit</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-effect {
+            backdrop-filter: blur(12px);
+            background: rgba(17, 24, 39, 0.8);
+        }
+        .animate-gradient {
+            background-size: 200% 200%;
+            animation: gradient 8s ease infinite;
+        }
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .input-focus-ring {
+            transition: all 0.2s ease;
+        }
+        .input-focus-ring:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+        }
+        .matrix-display {
+            font-family: monospace;
+            white-space: pre;
+        }
+    </style>
 </head>
-<body class="bg-gray-900 text-white">
-    <div class="container mx-auto p-6">
-        <h1 class="text-3xl font-bold text-center mb-6">Deadlock Prevention & Recovery Toolkit</h1>
-
-        <div class="bg-gray-800 p-6 rounded-lg">
-            <label class="block text-lg">Processes (comma-separated):</label>
-            <input type="text" id="processes" class="w-full p-2 rounded bg-gray-700 text-white">
-
-            <label class="block mt-4 text-lg">Resources (comma-separated):</label>
-            <input type="text" id="resources" class="w-full p-2 rounded bg-gray-700 text-white">
-
-            <label class="block mt-4 text-lg">Allocation Matrix (JSON format):</label>
-            <textarea id="allocation" class="w-full p-2 rounded bg-gray-700 text-white">[[0, 1], [2, 0]]</textarea>
-
-            <label class="block mt-4 text-lg">Max Demand Matrix (JSON format):</label>
-            <textarea id="max_demand" class="w-full p-2 rounded bg-gray-700 text-white">[[3, 2], [2, 2]]</textarea>
-
-            <label class="block mt-4 text-lg">Available Resources (comma-separated):</label>
-            <input type="text" id="available" class="w-full p-2 rounded bg-gray-700 text-white">
-
-            <button onclick="simulate()" class="mt-4 bg-blue-500 px-4 py-2 rounded text-white w-full">Run Simulation</button>
+<body class="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white animate-gradient">
+    <div class="container mx-auto p-6 flex flex-col items-center min-h-screen">
+        <!-- Header Section -->
+        <div class="w-full text-center mb-12 mt-8">
+            <h1 class="text-5xl font-extrabold mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                Deadlock Prevention & Recovery Toolkit
+            </h1>
+            <p class="text-gray-300 text-lg max-w-2xl mx-auto">
+                Analyze system states, detect deadlocks, and find safe execution sequences using the Banker's Algorithm
+            </p>
         </div>
 
-        <div class="mt-6 bg-gray-800 p-6 rounded-lg">
-            <h2 class="text-2xl font-bold">Results</h2>
-            <p id="result" class="mt-2"></p>
+        <!-- Main Form Section -->
+        <div class="glass-effect p-8 rounded-2xl shadow-2xl w-full max-w-3xl border border-gray-700/50 space-y-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Left Column -->
+                <div class="space-y-6">
+                    <div class="space-y-2">
+                        <label class="block text-lg font-semibold text-blue-300">Processes</label>
+                        <input type="text" id="processes" placeholder="e.g., P0,P1,P2,P3,P4" 
+                               class="w-full p-3 rounded-xl bg-gray-800/50 text-white border border-blue-500/30 input-focus-ring placeholder-gray-500">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-lg font-semibold text-purple-300">Resources</label>
+                        <input type="text" id="resources" placeholder="e.g., A,B,C" 
+                               class="w-full p-3 rounded-xl bg-gray-800/50 text-white border border-purple-500/30 input-focus-ring placeholder-gray-500">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-lg font-semibold text-red-300">Available Resources</label>
+                        <input type="text" id="available" placeholder="e.g., 3,3,2" 
+                               class="w-full p-3 rounded-xl bg-gray-800/50 text-white border border-red-500/30 input-focus-ring placeholder-gray-500">
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="space-y-6">
+                    <div class="space-y-2">
+                        <label class="block text-lg font-semibold text-green-300">Allocation Matrix</label>
+                        <textarea id="allocation" rows="3" placeholder="e.g., [[0,1,0], [2,0,0], [3,0,2], [2,1,1], [0,0,2]]" 
+                                  class="w-full p-3 rounded-xl bg-gray-800/50 text-white border border-green-500/30 input-focus-ring placeholder-gray-500"></textarea>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-lg font-semibold text-yellow-300">Max Demand Matrix</label>
+                        <textarea id="max_demand" rows="3" placeholder="e.g., [[7,5,3], [3,2,2], [9,0,2], [2,2,2], [4,3,3]]" 
+                                  class="w-full p-3 rounded-xl bg-gray-800/50 text-white border border-yellow-500/30 input-focus-ring placeholder-gray-500"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button onclick="simulate()" 
+                    class="w-full mt-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 p-4 rounded-xl text-white font-bold text-lg shadow-lg transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
+                Run Simulation
+            </button>
+        </div>
+
+        <!-- Results Section -->
+        <div class="glass-effect p-8 rounded-2xl shadow-2xl w-full max-w-3xl border border-gray-700/50 mb-8">
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="h-12 w-12">
+                    <lottie-player src="https://lottie.host/c6f50f10-0bd2-4e6e-b862-59b5b12aa44b/1OBQYkKrfG.json" 
+                                  background="transparent" speed="1" loop autoplay>
+                    </lottie-player>
+                </div>
+                <h2 class="text-3xl font-bold bg-gradient-to-r from-blue-400 to-green-400 bg-clip-text text-transparent">
+                    Analysis Results
+                </h2>
+            </div>
+            <div id="result" class="text-lg space-y-4 text-gray-200"></div>
         </div>
     </div>
 
-    <script >
+    <script>
         async function simulate() {
-    const processes = document.getElementById("processes").value.split(",");
-    const resources = document.getElementById("resources").value.split(",");
-    const allocation = JSON.parse(document.getElementById("allocation").value);
-    const max_demand = JSON.parse(document.getElementById("max_demand").value);
-    const available = document.getElementById("available").value.split(",").map(Number);
+            try {
+                const processes = document.getElementById("processes").value.split(",");
+                const resources = document.getElementById("resources").value.split(",");
+                const available = document.getElementById("available").value.split(",").map(Number);
+                const allocation = JSON.parse(document.getElementById("allocation").value);
+                const max_demand = JSON.parse(document.getElementById("max_demand").value);
 
-    const response = await fetch("/simulate", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ processes, resources, allocation, max_demand, available })
-    });
+                const response = await fetch("/simulate", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ processes, resources, allocation, max_demand, available })
+                });
 
-    const data = await response.json();
-    let result = `Safe State: ${data.safe_state ? "Yes" : "No"}<br>`;
-    
-    if (data.safe_state) {
-        result += `Safe Sequence: ${data.safe_sequence.join(" → ")}<br>`;
-    }
+                const data = await response.json();
+                let result = `<strong>Safe State:</strong> ${data.safe_state ? "Yes" : "No"}<br>`;
 
-    if (data.deadlock_detected) {
-        result += `Deadlock detected! Cycle: ${JSON.stringify(data.deadlock_cycle)}<br>`;
-    } else {
-        result += "No deadlock detected.<br>";
-    }
+                if (data.safe_state) {
+                    result += `<strong>Safe Sequence:</strong> ${data.safe_sequence.join(" → ")}<br>`;
+                }
 
-    document.getElementById("result").innerHTML = result;
-}
+                if (data.deadlock_detected) {
+                    result += `<strong>Deadlock detected!</strong> Cycle: ${JSON.stringify(data.deadlock_cycle)}<br>`;
+                } else {
+                    result += "<strong>No deadlock detected.</strong><br>";
+                }
 
+                document.getElementById("result").innerHTML = result;
+            } catch (error) {
+                console.error("Error in simulation:", error);
+                document.getElementById("result").innerHTML = "<strong>Error in processing data. Please check input format.</strong>";
+            }
+        }
     </script>
 </body>
 </html>
