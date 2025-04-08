@@ -104,7 +104,7 @@
                     Analysis Results
                 </h2>
             </div>
-            <div id="result" class="text-lg space-y-4 text-gray-200"></div>
+            <div id="result" class="text-lg space-y-4 text-gray-200 leading-relaxed font-medium"></div>
         </div>
     </div>
 
@@ -124,30 +124,43 @@
                 });
 
                 const data = await response.json();
-                let result = `<strong>Safe State:</strong> ${data.safe_state ? "Yes" : "No"}<br>`;
-
-                if (data.safe_state) {
-                    result += `<strong>Safe Sequence:</strong> ${data.safe_sequence.join(" → ")}<br>`;
-                }
+                let result = `
+                    <div class="bg-gray-800/60 p-4 rounded-xl border border-gray-600 shadow-inner">
+                        <p class="text-blue-400"><strong>Safe State:</strong> 
+                            <span class="${data.safe_state ? 'text-green-400' : 'text-red-400'} font-semibold">
+                                ${data.safe_state ? "Yes ✅" : "No ❌"}
+                            </span>
+                        </p>
+                        ${data.safe_state ? `
+                        <p class="text-green-300 mt-2">
+                            <strong>Safe Sequence:</strong> 
+                            <span class="font-mono text-white">${data.safe_sequence.join(" → ")}</span>
+                        </p>` : ""}
+                    </div>
+                `;
 
                 if (data.deadlock_detected) {
-    result += `
-        <div class="p-4 mt-4 rounded-lg border border-red-500 bg-red-900/50 text-red-300">
-            <strong class="text-red-400 text-lg">🚨 Deadlock detected!</strong>
-            <div class="mt-2 text-sm font-mono bg-red-800/40 p-2 rounded-md inline-block">
-                ${data.deadlock_cycle.map(edge => `[${edge[0]} → ${edge[1]}]`).join(" ⮕ ")}
-            </div>
-        </div>`;
-
-
+                    result += `
+                        <div class="p-4 mt-4 rounded-xl border border-red-500 bg-red-900/50 text-red-300">
+                            <strong class="text-red-400 text-lg">🚨 Deadlock detected!</strong>
+                            <div class="mt-2 text-sm font-mono bg-red-800/40 p-2 rounded-md inline-block">
+                                ${data.deadlock_cycle.map(edge => `[${edge[0]} → ${edge[1]}]`).join(" ⮕ ")}
+                            </div>
+                        </div>`;
                 } else {
-                    result += "<strong>No deadlock detected.</strong><br>";
+                    result += `
+                        <div class="text-green-400 mt-4 font-semibold">
+                            ✅ No deadlock detected.
+                        </div>`;
                 }
 
                 document.getElementById("result").innerHTML = result;
             } catch (error) {
                 console.error("Error in simulation:", error);
-                document.getElementById("result").innerHTML = "<strong>Error in processing data. Please check input format.</strong>";
+                document.getElementById("result").innerHTML = `
+                    <div class="text-red-400 font-semibold bg-red-800/40 p-4 rounded-xl border border-red-600">
+                        ⚠️ Error in processing data. Please check input format.
+                    </div>`;
             }
         }
     </script>
